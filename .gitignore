@@ -26,3 +26,7 @@ dist-ssr
 __pycache__
 seeder
 server
+react.svg
+vite.svg
+package-lock.json
+lint_errors.txt
