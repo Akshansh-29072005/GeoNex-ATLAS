@@ -1,0 +1,64 @@
+services:
+  # Backend Core (Go)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: csidc-backend
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+      - redis
+    networks:
+      - csidc-network
+
+  # Python Analysis Service
+  python-service:
+    build:
+      context: ./analysis
+      dockerfile: Dockerfile
+    container_name: csidc-analysis
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./analysis:/app
+    networks:
+      - csidc-network
+
+  # Database (PostgreSQL + PostGIS)
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: csidc-db
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=csidc_compliance
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - ./backend/scripts/init_schema.sql:/docker-entrypoint-initdb.d/01_init.sql
+    networks:
+      - csidc-network
+
+  # Redis Cache
+  redis:
+    image: redis:alpine
+    container_name: csidc-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - csidc-network
+
+volumes:
+  db_data:
+
+
+networks:
+  csidc-network:
+    driver: bridge
