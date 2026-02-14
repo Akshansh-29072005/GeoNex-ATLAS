@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+numpy
+opencv-python-headless
+requests
+pydantic
+sentinelhub
+shapely
+python-dotenv
+pytest
+httpx
