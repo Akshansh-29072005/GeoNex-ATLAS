@@ -25,7 +25,7 @@ func NewRepository() Repository {
 func (r *repository) CreatePlot(plot *Plot, geojson string) error {
 	// Calculate Area using PostGIS (ST_Area of Geography gives Square Meters)
 	query := `INSERT INTO plots (id, owner_id, area_sqm, location_name, district, source, status, geom, created_at) 
-			  VALUES (?, ?, ST_Area(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326)::geography), ?, ?, ?, ?, ST_SetSRID(ST_GeomFromGeoJSON(?), 4326), NOW())
+			  VALUES (?, ?, ST_Area(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326)::geography), ?, ?, ?, ?, ST_Multi(ST_SetSRID(ST_GeomFromGeoJSON(?), 4326)), NOW())
 			  RETURNING area_sqm`
 
 	// Use Scan to update AreaSqm
