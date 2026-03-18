@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
-} from "@/components/ui/table";
+} from "../../components/ui/table";
 import {
     CheckCircle, AlertTriangle, AlertCircle, Download, FileOutput, ChevronLeft, ChevronRight, Search
 } from "lucide-react";
@@ -45,7 +45,14 @@ export function LeaseRecordsTable({ allotments }: { allotments: Allotment[] }) {
         return {
             id: a.id,
             plot_id: a.plot_id,
-            allottee: a.owner?.name || "Unknown Company", // Need to ensure owner is populated or mock it
+            allottee: (() => {
+                try {
+                    const details = JSON.parse(a.applicant_details);
+                    return details?.full_name || "Unknown Allottee";
+                } catch {
+                    return "Unknown Company";
+                }
+            })(),
             lease_start: "2023",
             lease_end: "2053",
             annual_rent: rent,
@@ -126,7 +133,7 @@ export function LeaseRecordsTable({ allotments }: { allotments: Allotment[] }) {
                                     <TableCell className="text-right">{formatCurrency(record.annual_rent)}</TableCell>
                                     <TableCell className="text-right">{formatCurrency(record.water_charge)}</TableCell>
                                     <TableCell className={`text-right font-medium ${record.due_amount === 0 ? "text-green-600" :
-                                            record.due_amount < 50000 ? "text-amber-600" : "text-destructive"
+                                        record.due_amount < 50000 ? "text-amber-600" : "text-destructive"
                                         }`}>
                                         {formatCurrency(record.due_amount)}
                                     </TableCell>
@@ -165,8 +172,8 @@ export function LeaseRecordsTable({ allotments }: { allotments: Allotment[] }) {
                             key={page}
                             onClick={() => setCurrentPage(page)}
                             className={`w-8 h-8 rounded text-xs font-medium transition ${currentPage === page
-                                    ? "bg-primary text-primary-foreground"
-                                    : "hover:bg-muted text-muted-foreground"
+                                ? "bg-primary text-primary-foreground"
+                                : "hover:bg-muted text-muted-foreground"
                                 }`}
                         >
                             {page}

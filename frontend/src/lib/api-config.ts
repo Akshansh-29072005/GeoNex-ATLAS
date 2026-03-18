@@ -8,7 +8,7 @@ export const API_CONFIG = {
     BASE_URL: import.meta.env.VITE_API_URL || 'http://localhost:8080',
 
     // Python Analysis Service URL
-    ANALYSIS_URL: import.meta.env.VITE_ANALYSIS_URL || 'http://localhost:8000',
+    ANALYSIS_URL: import.meta.env.VITE_ANALYSIS_URL || 'http://localhost:8002',
 
     // API Prefix
     API_PREFIX: '/api',

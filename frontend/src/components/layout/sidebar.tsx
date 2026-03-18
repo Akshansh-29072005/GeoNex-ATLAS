@@ -39,7 +39,7 @@ export function Sidebar() {
         <div className="flex h-screen w-64 flex-col border-r bg-card text-card-foreground">
             <div className="flex h-16 items-center border-b px-6">
                 <Map className="mr-2 h-6 w-6 text-primary" />
-                <span className="text-lg font-bold tracking-tight">CSIDC Monitor</span>
+                <span className="text-lg font-bold tracking-tight">GeoNex ATLAS</span>
             </div>
 
             <div className="flex-1 overflow-auto py-4">
