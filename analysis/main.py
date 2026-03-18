@@ -519,6 +519,30 @@ def run_monitoring_cycle():
                     "geojson": "{}"
                  })
 
+            # Check/Register DEMO-BILASPUR
+            bilaspur_id = "DEMO-BILASPUR"
+            bilaspur_exists = any(p.get('id') == bilaspur_id for p in plots_list)
+            if not bilaspur_exists and token:
+                print(f"    ℹ️ Demo Plot {bilaspur_id} not found. Registering...")
+                try:
+                    payload = {
+                        "id": bilaspur_id,
+                        "location_name": "Bilaspur SECL Zone - Plot B2",
+                        "district": "Bilaspur",
+                        "geojson": '{"type":"Polygon","coordinates":[[[82.1400,22.0700],[82.1450,22.0700],[82.1450,22.0750],[82.1400,22.0750],[82.1400,22.0700]]]}',
+                        "owner_id": "00000000-0000-0000-0000-000000000000"
+                    }
+                    requests.post(f"{backend_url}/api/plots/register", json=payload, headers=headers)
+                    plots_list.append(payload)
+                except Exception as e:
+                    print(f"    ❌ Error registering {bilaspur_id}: {e}")
+            elif not bilaspur_exists:
+                 plots_list.append({
+                    "id": bilaspur_id,
+                    "location_name": "Bilaspur SECL Zone - Plot B2",
+                    "geojson": "{}"
+                 })
+
             plots = plots_list
             
         except Exception as e:
@@ -611,6 +635,77 @@ def run_monitoring_cycle():
                         print("    ❌ Demo images not found in demo_images/ directory.")
                     
                     continue # Skip standard logic for demo plot
+
+                # DEMO LOGIC FOR "DEMO-BILASPUR" (Second Fake Data)
+                if plot_id == "DEMO-BILASPUR":
+                    print(f"    ℹ️ Running DEMO comparison for {plot_id} using local images...")
+                    
+                    import os
+                    base_path = os.path.dirname(os.path.abspath(__file__))
+                    # Reusing same images for demo purposes, or could use duplicates if available
+                    ref_path = os.path.join(base_path, "demo_images/before.png")
+                    latest_path = os.path.join(base_path, "demo_images/after.png")
+                    
+                    if os.path.exists(ref_path) and os.path.exists(latest_path):
+                        ref_img = cv2.imread(ref_path)
+                        latest_img = cv2.imread(latest_path)
+                        
+                        # Flip images to make it look different from Raipur
+                        ref_img = cv2.flip(ref_img, 1)
+                        latest_img = cv2.flip(latest_img, 1)
+
+                        # 1. Compute SSIM
+                        ssim_score = compute_ssim(ref_img, latest_img)
+                        change_percent = (1.0 - ssim_score) * 100
+                        
+                        print(f"    📊 Comparison Result: Change={change_percent:.2f}%, SSIM={ssim_score:.4f}")
+                        
+                        # 2. Generate Diff Image
+                        diff = cv2.absdiff(ref_img, latest_img)
+                        mask = cv2.cvtColor(diff, cv2.COLOR_BGR2GRAY)
+                        _, high_mask = cv2.threshold(mask, 60, 255, cv2.THRESH_BINARY)
+                        
+                        height, width = mask.shape
+                        overlay_color = np.zeros((height, width, 3), dtype=np.uint8)
+                        overlay_color[high_mask == 255] = [0, 0, 255] # Red
+                        
+                        overlay = cv2.addWeighted(latest_img, 0.7, overlay_color, 0.5, 0)
+                        
+                        # Save Diff Image
+                        diff_filename = f"diff_{plot_id}.png"
+                        diff_path = os.path.join("images", diff_filename)
+                        cv2.imwrite(diff_path, overlay)
+                        print(f"    💾 Saved Comparison Image to {diff_path}")
+                        
+                        public_url = os.getenv("PUBLIC_URL", "http://localhost:8002")
+
+                        if change_percent > 5:
+                            print(f"    ⚠️ VIOLATION DETECTED on {plot_id}")
+                            violation_data = {
+                                "plot_id": plot_id,
+                                "type": "ENCROACHMENT", # Different type
+                                "severity": "MEDIUM",
+                                "description": f"Automated System: Moderate change ({change_percent:.2f}%) detected. Potential boundary encroachment.",
+                                "confidence_score": round(change_percent, 2),
+                                "image_before_url": f"{public_url}/demo-images/before.png", 
+                                "image_after_url": f"{public_url}/demo-images/after.png",
+                                "comparison_image_url": f"{public_url}/images/{diff_filename}"
+                            }
+                            
+                            try:
+                                v_resp = requests.post(f"{backend_url}/api/violations/", json=violation_data, headers=headers)
+                                if v_resp.status_code in [200, 201]:
+                                    print(f"    ✅ Violation Reported for {plot_id}")
+                                else:
+                                    print(f"    ❌ Failed to report violation: {v_resp.text}")
+                            except:
+                                pass
+                        else:
+                            print(f"    ✅ No significant change detected.")
+                    else:
+                        print("    ❌ Demo images not found.")
+                    
+                    continue
 
             # ... (Rest of existing logic for other plots)
                 # 2. Comparison (Simulated vs Real)
