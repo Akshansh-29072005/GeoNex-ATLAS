@@ -1,4 +1,4 @@
-# 🛰️ CSIDC Land Compliance Platform
+# 🛰️ CSIDC Land Compliance Platform[GeoNex ATLAS]
 
 **AI-Powered Satellite Monitoring for Industrial Land Compliance**
 
@@ -397,5 +397,5 @@ This project is developed for CSIDC (Chhattisgarh State Industrial Development C
 ---
 
 <p align="center">
-  Built with ❤️ for Smart Governance
+  Built with ❤️ for GeoNex ATLAS
 </p>
